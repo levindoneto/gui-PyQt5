@@ -1,12 +1,22 @@
+# -*- coding: utf-8 -*-
 import sys
 from PyQt5.QtWidgets import QApplication, QWidget # Basic widgets
+from PyQt5.QtGui import QIcon 
 
-app = QApplication(sys.argv) # The app ought to create an object
-
-w = QWidget() # It is the base class for all the UI objects
-w.resize(1024, 768)
-w.move(300, 300)
-w.setWindowTitle('Time Tagger | Web Application')
-w.show()
-  
-sys.exit(app.exec_()) # Main loop used for keeping the window open until the user closes it
+class Gui(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.initUI() # Start gui
+        
+        
+    def initUI(self):
+        self.setGeometry(100, 100, 1024, 768) # Position(x,y), Size(x,y)
+        self.setWindowTitle('Time Tagger | Web Application') # Get the icon
+        self.setWindowIcon(QIcon('icon.ico'))        
+        self.show() # Show the window to the user
+        
+        
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    ex = Gui()
+    sys.exit(app.exec_())

@@ -1,5 +1,5 @@
 # GUI | PyQt5
-Python GUI made with use of the Library PyQt5.
+Python GUI made with the use of the Library PyQt5.
 
 __Author:__ Levindo Gabriel Taschetto Neto.
 
