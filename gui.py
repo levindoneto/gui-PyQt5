@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 import sys
-from PyQt5.QtWidgets import (QWidget, QToolTip, QPushButton, QApplication) # Basic widgetsi
-
+from PyQt5.QtWidgets import (QWidget, QToolTip, QPushButton, QApplication) # Basic widgets
 from PyQt5.QtGui import QFont
 from PyQt5.QtGui import QIcon
+from PyQt5.QtGui import QPainter, QColor, QPen # For the background
+from PyQt5.QtCore import Qt
 import ctypes
 
 class Gui(QWidget):
@@ -18,10 +19,15 @@ class Gui(QWidget):
         super().__init__()
         self.initUI() # Start gui
 
-
     def initUI(self):
         QToolTip.setFont(QFont(self.TOOL_TIP["Type"], int(self.TOOL_TIP["Size"])))
         self.setGeometry(100, 100, 1024, 768) # Position(x,y), Size(x,y)
+
+        ''' Set window background color '''
+        self.setAutoFillBackground(True)
+        p = self.palette()
+        p.setColor(self.backgroundRole(), Qt.blue)
+        self.setPalette(p) # Set color to the background
 
         # Button for starting the server with a ballon help
         startServer = QPushButton('Start server', self)
