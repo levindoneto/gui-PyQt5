@@ -10,7 +10,7 @@ __Author:__ Levindo Gabriel Taschetto Neto.
 Python 3.5.4 :: Anaconda custom (64-bit)
 
 ### Libraries
-* [sys] (https://docs.python.org/2/library/sys.html)
+* [sys](https://docs.python.org/2/library/sys.html)
 * [PyQt5.QtWidgets](http://pyqt.sourceforge.net/Docs/PyQt5/QtWidgets.html)
 
 ## How to use
