@@ -1,6 +1,4 @@
-
-
-import random
+''' Used libraries '''
 import sys
 import ctypes
 from PyQt5 import QtCore, QtGui, QtWidgets
@@ -24,25 +22,29 @@ fontText = QtGui.QFont(TEXT_FONT["Type"], int(TEXT_FONT["Size"]), QtGui.QFont.Bo
 fontButton = QtGui.QFont(BUTTON_FONT["Type"], int(BUTTON_FONT["Size"]), QtGui.QFont.Bold)
 QToolTip.setFont(QFont(TOOL_TIP["Type"], int(TOOL_TIP["Size"]))) # It user with the hover event
 
+''' Window' settings '''
 HEIGHT = 580
 WIDTH = 300
 
-
 class Server(QDialog):
+    def closeEvent(self, event): # Trigger the dialog's close button
+        self.closeServer(self)
+
     ''' In order to have the icon on the taskbar '''
     myappid = u'mycompany.myproduct.subproduct.version'
     ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
     def __init__(self, parent=None):
         PORT = 8888 # ToDo: Get from the current app
         super(Server, self).__init__(parent) # Init the gui server
+
+        ''' Centralize the window and fix a size for it '''
         centerPosition = str(QDesktopWidget().availableGeometry().center()).split("PyQt5.QtCore.QPoint")[-1].split(",")
         centerWidth = int(centerPosition[0].strip('('))
         centerHeight = int(centerPosition[1].strip(')'))
-
-        self.setWindowIcon(QIcon('icon.ico'))
         self.setFixedSize(HEIGHT, WIDTH) # Forbid  resize of the window
-
         self.setGeometry(centerWidth-HEIGHT/2, centerHeight-WIDTH/2, HEIGHT, WIDTH) # Position(x,y), Size(x,y) -> In the center
+
+        ''' Create Labels: status, port, buttons for opening the client and closing the server '''
         statusLabel = QLabel()
         statusLabel.setWordWrap(True)
         portLabel = QLabel()
@@ -58,13 +60,7 @@ class Server(QDialog):
         quitButton.setFont(fontButton)
         quitButton.setToolTip('It closes the server')
 
-        self.server = QLocalServer()
-        if not self.server.listen('data'):
-            QMessageBox.critical(self, "Time Tagger Server",
-                    "Unable to start the server: %s." % self.server.errorString())
-            self.close()
-            return
-
+        ''' Define texts for the text labels '''
         statusLabel.setText("The server has started running.\n " "It is running at the port ")
         statusLabel.setAlignment(Qt.AlignCenter)
         statusLabel.setFont(fontText)
@@ -74,16 +70,18 @@ class Server(QDialog):
         spaceLabel.setText("\n\n")
         spaceLabel.setAlignment(Qt.AlignCenter)
 
+        ''' Define actions for the buttons '''
         openClientButton.clicked.connect(self.openClient)
-        quitButton.clicked.connect(self.close)
-        self.server.newConnection.connect(self.startServer)
+        quitButton.clicked.connect(self.closeServer)
 
+        ''' Define layout for the buttons '''
         buttonLayout = QHBoxLayout()
         buttonLayout.addStretch(1)
         buttonLayout.addWidget(openClientButton)
         buttonLayout.addWidget(quitButton)
         buttonLayout.addStretch(1)
 
+        ''' Define the main layout with the texts and main button '''
         mainLayout = QVBoxLayout()
         mainLayout.setContentsMargins(0, 50, 0, 50)
         mainLayout.addWidget(statusLabel)
@@ -92,29 +90,23 @@ class Server(QDialog):
         mainLayout.addLayout(buttonLayout) # Button for closing the server
         self.setLayout(mainLayout)
         self.setWindowTitle("Time Tagger | Web Application")
-        self.setWindowFlags(self.windowFlags()
+        self.setWindowIcon(QIcon('icon.ico'))
+        self.setWindowFlags(self.windowFlags() # Just the minimize button is available
             | QtCore.Qt.WindowMinimizeButtonHint
-            | QtCore.Qt.WindowSystemMenuHint) # Just the minimize button is available
+            | QtCore.Qt.WindowSystemMenuHint)
 
     def startServer(self):
-        block = QByteArray()
-        out = QDataStream(block, QIODevice.WriteOnly)
-        out.setVersion(QDataStream.Qt_4_0)
-        out.writeUInt16(0)
-        out.device().seek(0)
-        out.writeUInt16(block.size() - 2)
-
-        clientConnection = self.server.nextPendingConnection()
-        clientConnection.disconnected.connect(clientConnection.deleteLater)
-        clientConnection.write(block)
-        clientConnection.flush()
-        clientConnection.disconnectFromServer()
+        print("The server has been started")
 
     def openClient(self):
-        print("Open Client")
+        print("Opening Client")
+
+    def closeServer(self, event):
+        print("Closing server")
+        self.close() # Close the window
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    server = Server()
-    server.show()
-    sys.exit(app.exec_())
+    server = Server() # Start the app
+    server.show() # Show the app's window
+    sys.exit(app.exec_()) # Close the window if the user clicks <close> or by the dialog's close event
