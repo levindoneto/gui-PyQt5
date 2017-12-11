@@ -2,16 +2,17 @@
 
 import random
 import sys
+import ctypes
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QByteArray, QDataStream, QIODevice
 from PyQt5.QtWidgets import (QApplication, QDialog, QLabel, QHBoxLayout, QMessageBox, QPushButton, QVBoxLayout)
 from PyQt5.QtNetwork import QLocalServer
-import ctypes
 from PyQt5.QtWidgets import (QWidget, QToolTip, QPushButton, QApplication) # Basic widgets
 from PyQt5.QtGui import QFont
 from PyQt5.QtGui import QIcon
 from PyQt5.QtGui import QPainter, QColor, QPen # For the background
 from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QMainWindow, QLabel, QGridLayout, QWidget, QDesktopWidget # To centralize the window
 
 ''' Fonts '''
 TEXT_FONT = {"Type": "Arial", "Size": "10", "Style": "bold"}
@@ -23,6 +24,10 @@ fontText = QtGui.QFont(TEXT_FONT["Type"], int(TEXT_FONT["Size"]), QtGui.QFont.Bo
 fontButton = QtGui.QFont(BUTTON_FONT["Type"], int(BUTTON_FONT["Size"]), QtGui.QFont.Bold)
 QToolTip.setFont(QFont(TOOL_TIP["Type"], int(TOOL_TIP["Size"]))) # It user with the hover event
 
+HEIGHT = 580
+WIDTH = 300
+
+
 class Server(QDialog):
     ''' In order to have the icon on the taskbar '''
     myappid = u'mycompany.myproduct.subproduct.version'
@@ -30,11 +35,15 @@ class Server(QDialog):
     def __init__(self, parent=None):
         PORT = 8888 # ToDo: Get from the current app
         super(Server, self).__init__(parent) # Init the gui server
+        centerPosition = str(QDesktopWidget().availableGeometry().center()).split("PyQt5.QtCore.QPoint")[-1].split(",")
+        centerWidth = int(centerPosition[0].strip('('))
+        centerHeight = int(centerPosition[1].strip(')'))
 
         # Button for starting the server with a ballon help
         self.setWindowIcon(QIcon('icon.ico'))
-        self.setGeometry(100, 100, 580, 300) # Position(x,y), Size(x,y)
+        self.setFixedSize(HEIGHT, WIDTH) # Forbid  resize of the window
 
+        self.setGeometry(centerWidth-HEIGHT/2, centerHeight-WIDTH/2, HEIGHT, WIDTH) # Position(x,y), Size(x,y) -> In the center
         statusLabel = QLabel()
         statusLabel.setWordWrap(True)
         portLabel = QLabel()
