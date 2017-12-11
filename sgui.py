@@ -39,7 +39,6 @@ class Server(QDialog):
         centerWidth = int(centerPosition[0].strip('('))
         centerHeight = int(centerPosition[1].strip(')'))
 
-        # Button for starting the server with a ballon help
         self.setWindowIcon(QIcon('icon.ico'))
         self.setFixedSize(HEIGHT, WIDTH) # Forbid  resize of the window
 
@@ -92,8 +91,10 @@ class Server(QDialog):
         mainLayout.addWidget(spaceLabel)
         mainLayout.addLayout(buttonLayout) # Button for closing the server
         self.setLayout(mainLayout)
-
         self.setWindowTitle("Time Tagger | Web Application")
+        self.setWindowFlags(self.windowFlags()
+            | QtCore.Qt.WindowMinimizeButtonHint
+            | QtCore.Qt.WindowSystemMenuHint) # Just the minimize button is available
 
     def startServer(self):
         block = QByteArray()
