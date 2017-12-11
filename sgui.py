@@ -2,6 +2,7 @@
 
 import random
 import sys
+from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QByteArray, QDataStream, QIODevice
 from PyQt5.QtWidgets import (QApplication, QDialog, QLabel, QHBoxLayout, QMessageBox, QPushButton, QVBoxLayout)
 from PyQt5.QtNetwork import QLocalServer
@@ -12,13 +13,17 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtGui import QPainter, QColor, QPen # For the background
 from PyQt5.QtCore import Qt
 
+''' Fonts '''
+TEXT_FONT = {"Type": "Arial", "Size": "10", "Style": "bold"}
+BUTTON_FONT = {"Type": "Arial", "Size": "10", "Style": "bold italic"}
+TOOL_TIP = {"Type": "Arial", "Size": "5", "Style": "normal"}
+
+''' Fonts' settings '''
+fontText = QtGui.QFont(TEXT_FONT["Type"], int(TEXT_FONT["Size"]), QtGui.QFont.Bold)
+fontButton = QtGui.QFont(BUTTON_FONT["Type"], int(BUTTON_FONT["Size"]), QtGui.QFont.Bold)
+QToolTip.setFont(QFont(TOOL_TIP["Type"], int(TOOL_TIP["Size"]))) # It user with the hover event
 
 class Server(QDialog):
-    ''' Fonts '''
-    INPUT_FONT = {"Type": "Arial", "Size": "20", "Style": "bold"}
-    LABEL_FONT = {"Type": "Arial", "Size": "20", "Style": "bold italic"}
-    TOOL_TIP = {"Type": "Arial", "Size": "8", "Style": "normal"}
-
     ''' In order to have the icon on the taskbar '''
     myappid = u'mycompany.myproduct.subproduct.version'
     ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
@@ -38,8 +43,12 @@ class Server(QDialog):
         spaceLabel.setWordWrap(True)
         openClientButton = QPushButton("Open Client")
         openClientButton.setAutoDefault(False)
+        openClientButton.setFont(fontButton)
+        openClientButton.setToolTip('It opens the client in the default browser')
         quitButton = QPushButton("Close")
         quitButton.setAutoDefault(False)
+        quitButton.setFont(fontButton)
+        quitButton.setToolTip('It closes the server')
 
         self.server = QLocalServer()
         if not self.server.listen('data'):
@@ -50,10 +59,13 @@ class Server(QDialog):
 
         statusLabel.setText("The server has started running.\n " "It is running at the port ")
         statusLabel.setAlignment(Qt.AlignCenter)
+        statusLabel.setFont(fontText)
         portLabel.setText(str(PORT))
         portLabel.setAlignment(Qt.AlignCenter)
+        portLabel.setFont(fontText)
         spaceLabel.setText("\n\n")
         spaceLabel.setAlignment(Qt.AlignCenter)
+
         openClientButton.clicked.connect(self.openClient)
         quitButton.clicked.connect(self.close)
         self.server.newConnection.connect(self.startServer)
