@@ -1,64 +1,127 @@
-# -*- coding: utf-8 -*-
+''' Used libraries '''
 import sys
+import ctypes
+from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import QByteArray, QDataStream, QIODevice
+from PyQt5.QtWidgets import (QApplication, QDialog, QLabel, QHBoxLayout, QMessageBox, QPushButton, QVBoxLayout)
+from PyQt5.QtNetwork import QLocalServer
 from PyQt5.QtWidgets import (QWidget, QToolTip, QPushButton, QApplication) # Basic widgets
 from PyQt5.QtGui import QFont
 from PyQt5.QtGui import QIcon
 from PyQt5.QtGui import QPainter, QColor, QPen # For the background
 from PyQt5.QtCore import Qt
-import ctypes
+from PyQt5.QtWidgets import QMainWindow, QLabel, QGridLayout, QWidget, QDesktopWidget # To centralize the window
+import webbrowser
 
-class Gui(QWidget):
+''' Fonts '''
+TEXT_FONT = {"Type": "Arial", "Size": "10", "Style": "bold"}
+BUTTON_FONT = {"Type": "Arial", "Size": "10", "Style": "bold italic"}
+TOOL_TIP = {"Type": "Arial", "Size": "5", "Style": "normal"}
+
+''' Fonts' settings '''
+fontText = QtGui.QFont(TEXT_FONT["Type"], int(TEXT_FONT["Size"]), QtGui.QFont.Bold)
+fontButton = QtGui.QFont(BUTTON_FONT["Type"], int(BUTTON_FONT["Size"]), QtGui.QFont.Bold)
+QToolTip.setFont(QFont(TOOL_TIP["Type"], int(TOOL_TIP["Size"]))) # It user with the hover event
+
+''' Window' settings '''
+HEIGHT = 580
+WIDTH = 300
+
+PORT = "8888"
+
+class Server(QDialog):
+    def closeEvent(self, event): # Trigger the dialog's close button
+        self.closeServer(self)
+
     ''' In order to have the icon on the taskbar '''
     myappid = u'mycompany.myproduct.subproduct.version'
     ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+    def __init__(self, parent=None):
+        PORT = 8888 # ToDo: Get from the current app
+        super(Server, self).__init__(parent) # Init the gui server
 
-    INPUT_FONT = {"Type": "Arial", "Size": "20", "Style": "bold"}
-    LABEL_FONT = {"Type": "Arial", "Size": "20", "Style": "bold italic"}
-    TOOL_TIP = {"Type": "Arial", "Size": "8", "Style": "normal"}
-    def __init__(self):
-        super().__init__()
-        self.initUI() # Start gui
+        ''' Centralize the window and fix a size for it '''
+        centerPosition = str(QDesktopWidget().availableGeometry().center()).split("PyQt5.QtCore.QPoint")[-1].split(",")
+        centerWidth = int(centerPosition[0].strip('('))
+        centerHeight = int(centerPosition[1].strip(')'))
+        self.setFixedSize(HEIGHT, WIDTH) # Forbid  resize of the window
+        self.setGeometry(centerWidth-HEIGHT/2, centerHeight-WIDTH/2, HEIGHT, WIDTH) # Position(x,y), Size(x,y) -> In the center
 
-    def initUI(self):
-        QToolTip.setFont(QFont(self.TOOL_TIP["Type"], int(self.TOOL_TIP["Size"])))
-        self.setGeometry(100, 100, 1024, 768) # Position(x,y), Size(x,y)
+        ''' Create Labels: status, port, buttons for opening the client and closing the server '''
+        statusLabel = QLabel()
+        statusLabel.setWordWrap(True)
+        portLabel = QLabel()
+        portLabel.setWordWrap(True)
+        spaceLabel = QLabel()
+        spaceLabel.setWordWrap(True)
+        openClientButton = QPushButton("Open Client")
+        openClientButton.setAutoDefault(False)
+        openClientButton.setFont(fontButton)
+        openClientButton.setToolTip('It opens the client in the default browser')
+        quitButton = QPushButton("Close")
+        quitButton.setAutoDefault(False)
+        quitButton.setFont(fontButton)
+        quitButton.setToolTip('It closes the server')
 
-        ''' Set window background color '''
-        self.setAutoFillBackground(True)
-        p = self.palette()
-        p.setColor(self.backgroundRole(), Qt.blue)
-        self.setPalette(p) # Set color to the background
+        ''' Define texts for the text labels '''
+        statusLabel.setText("The server has started running.\n " "It is running at the port ")
+        statusLabel.setAlignment(Qt.AlignCenter)
+        statusLabel.setFont(fontText)
+        portLabel.setText(str(PORT))
+        portLabel.setAlignment(Qt.AlignCenter)
+        portLabel.setFont(fontText)
+        spaceLabel.setText("\n\n")
+        spaceLabel.setAlignment(Qt.AlignCenter)
 
-        # Button for starting the server with a ballon help
-        startServer = QPushButton('Start server', self)
-        startServer.setToolTip('Click it to start the server in the localhost') # ToDo: Change the size
-        startServer.resize(startServer.sizeHint())
-        startServer.move(50, 50)
+        ''' Define actions for the buttons '''
+        openClientButton.clicked.connect(self.openClient)
+        quitButton.clicked.connect(self.closeServer)
 
-        # Button for stopping the server with a ballon help
-        stopServer = QPushButton('Stop server', self)
-        stopServer.setToolTip('Click it to stop the server') # ToDo: Change the size
-        stopServer.resize(stopServer.sizeHint())
-        stopServer.move(200, 50)
+        ''' Define layout for the buttons '''
+        buttonLayout = QHBoxLayout()
+        buttonLayout.addStretch(1)
+        buttonLayout.addWidget(openClientButton)
+        buttonLayout.addWidget(quitButton)
+        buttonLayout.addStretch(1)
 
-        # Button for opening the client with a ballon help
-        stopServer = QPushButton('Open client', self)
-        stopServer.setToolTip('Click it to stop the server') # ToDo: Change the size
-        stopServer.resize(stopServer.sizeHint())
-        stopServer.move(350, 50)
-
-        # Button for refreshing the server with a ballon help
-        refresh = QPushButton('Refresh', self)
-        refresh.setToolTip('Click it to refresh this page') # ToDo: Change the size
-        refresh.resize(refresh.sizeHint())
-        refresh.move(500, 50)
-
-        self.setWindowTitle('Time Tagger | Web Application')
+        ''' Define the main layout with the texts and main button '''
+        mainLayout = QVBoxLayout()
+        mainLayout.setContentsMargins(0, 50, 0, 50)
+        mainLayout.addWidget(statusLabel)
+        mainLayout.addWidget(portLabel)
+        mainLayout.addWidget(spaceLabel)
+        mainLayout.addLayout(buttonLayout) # Button for closing the server
+        self.setLayout(mainLayout)
+        self.setWindowTitle("Application")
         self.setWindowIcon(QIcon('icon.ico'))
-        self.show() # Show the window to the user
+        self.setWindowFlags(self.windowFlags() # Just the minimize button is available
+            | QtCore.Qt.WindowMinimizeButtonHint
+            | QtCore.Qt.WindowSystemMenuHint)
 
+    def getUserPort(self):
+        return PORT
+
+    def getServerPath(self):
+        print("Retrieving server path")
+        hostname = "localhost"
+        port = str(self.getUserPort())
+        path = "http://"+hostname+":"+port
+        return path
+
+    def startServer(self):
+        print("The server has been started")
+
+    def openClient(self):
+        path = self.getServerPath()
+        print("Opening server to %s" % path)
+        webbrowser.open(path)
+
+    def closeServer(self, event):
+        print("Closing server")
+        self.close() # Close the window
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    ex = Gui()
-    sys.exit(app.exec_())
+    server = Server() # Start the app
+    server.show() # Show the app's window
+    sys.exit(app.exec_()) # Close the window if the user clicks <close> or by the dialog's close event
