@@ -11,6 +11,9 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtGui import QPainter, QColor, QPen # For the background
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QMainWindow, QLabel, QGridLayout, QWidget, QDesktopWidget # To centralize the window
+import time
+
+import webbrowser # For the opening client
 
 ''' Fonts '''
 TEXT_FONT = {"Type": "Arial", "Size": "10", "Style": "bold"}
@@ -95,11 +98,22 @@ class Server(QDialog):
             | QtCore.Qt.WindowMinimizeButtonHint
             | QtCore.Qt.WindowSystemMenuHint)
 
+    def getServerPath(self):
+        print("Retrieving server path")
+        hostname = "localhost"
+        port = "8888"
+        #port = self.getUserPort()
+        path = "http://"+hostname+":"+port
+        return path
+
     def startServer(self):
         print("The server has been started")
+        #toggleServer(self, event=False)
 
     def openClient(self):
-        print("Opening Client")
+        path = self.getServerPath()
+        print("Opening server to %s" % path)
+        webbrowser.open(path)
 
     def closeServer(self, event):
         print("Closing server")
