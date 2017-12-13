@@ -1,6 +1,14 @@
-''' Used libraries '''
+"""This module implements an entry point for the user to the
+server functionality.
+"""
+import logging
 import sys
-import ctypes
+import threading
+
+from . import server
+from . import config
+from . import getVersion
+
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QByteArray, QDataStream, QIODevice
 from PyQt5.QtWidgets import (QApplication, QDialog, QLabel, QHBoxLayout, QMessageBox, QPushButton, QVBoxLayout)
@@ -11,9 +19,11 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtGui import QPainter, QColor, QPen # For the background
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QMainWindow, QLabel, QGridLayout, QWidget, QDesktopWidget # To centralize the window
-import time
+import ctypes
 
-import webbrowser # For the opening client
+import tkinter
+import tkinter.messagebox
+import webbrowser
 
 ''' Fonts '''
 TEXT_FONT = {"Type": "Arial", "Size": "10", "Style": "bold"}
@@ -29,6 +39,8 @@ QToolTip.setFont(QFont(TOOL_TIP["Type"], int(TOOL_TIP["Size"]))) # It user with 
 HEIGHT = 580
 WIDTH = 300
 
+PORT = 8888
+
 class Server(QDialog):
     def closeEvent(self, event): # Trigger the dialog's close button
         self.closeServer(self)
@@ -37,6 +49,7 @@ class Server(QDialog):
     myappid = u'mycompany.myproduct.subproduct.version'
     ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
     def __init__(self, parent=None):
+
         PORT = 8888 # ToDo: Get from the current app
         super(Server, self).__init__(parent) # Init the gui server
 
@@ -98,17 +111,38 @@ class Server(QDialog):
             | QtCore.Qt.WindowMinimizeButtonHint
             | QtCore.Qt.WindowSystemMenuHint)
 
+    def getUserPort(self):
+        return PORT
+
+
     def getServerPath(self):
         print("Retrieving server path")
-        hostname = "localhost"
-        port = "8888"
-        #port = self.getUserPort()
+        hostname = server.getHostname()
+        port = str(self.getUserPort())
         path = "http://"+hostname+":"+port
         return path
 
+    def serverIsRunning(self):
+        print("Retrieving if sever is running")
+        port = "8888" #self.getUserPort()
+        return server.isRunning(port)
+
     def startServer(self):
-        print("The server has been started")
-        #toggleServer(self, event=False)
+        print("Toggling server")
+
+        port = "8888" # ToDo: Get from getPort
+        if self.serverIsRunning():
+            print("Stopping server")
+            server.stop(port)
+        else:
+            print("Starting server")
+            self.server_thread = threading.Thread(
+                target=server.start,
+                args=[port, False]
+            )
+            self.server_thread.start()
+        #self.updateStatus()
+
 
     def openClient(self):
         path = self.getServerPath()
@@ -119,8 +153,9 @@ class Server(QDialog):
         print("Closing server")
         self.close() # Close the window
 
-if __name__ == '__main__':
+def run():
     app = QApplication(sys.argv)
     server = Server() # Start the app
+    server.startServer()
     server.show() # Show the app's window
     sys.exit(app.exec_()) # Close the window if the user clicks <close> or by the dialog's close event
